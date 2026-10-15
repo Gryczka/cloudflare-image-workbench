@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Studio camera illustration</title>
+  <desc id="desc">An original illustration of a black camera positioned to the right of a cream studio backdrop.</desc>
+  <defs>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#c5ad88" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="body" x2="0.9" y2="1">
+      <stop stop-color="#44443e"/>
+      <stop offset="1" stop-color="#171b1a"/>
+    </linearGradient>
+    <radialGradient id="glass">
+      <stop stop-color="#809b98"/>
+      <stop offset="0.55" stop-color="#2a4444"/>
+      <stop offset="1" stop-color="#111b1d"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="#efe2cc"/>
+  <rect width="1200" height="800" fill="url(#grid)" opacity="0.55"/>
+  <path d="M0 612h1200v188H0z" fill="#d7c4a5"/>
+  <path d="M0 612h1200" stroke="#b69c7c" stroke-width="3"/>
+  <ellipse cx="789" cy="651" rx="322" ry="49" fill="#8c795e" opacity="0.26"/>
+  <path d="M545 278h346c46 0 77 37 77 84v234c0 42-33 76-76 76H552c-44 0-75-33-75-76V357c0-47 24-79 68-79z" fill="url(#body)" stroke="#151716" stroke-width="15"/>
+  <path d="M572 207h201l41 71H543z" fill="#383933" stroke="#171716" stroke-width="12" stroke-linejoin="round"/>
+  <rect x="558" y="302" width="328" height="38" rx="9" fill="#666c62" opacity="0.35"/>
+  <circle cx="720" cy="467" r="155" fill="#1d2322" stroke="#0e1211" stroke-width="12"/>
+  <circle cx="720" cy="467" r="128" fill="#444943" stroke="#abb3a2" stroke-width="10"/>
+  <circle cx="720" cy="467" r="104" fill="url(#glass)" stroke="#131d1d" stroke-width="14"/>
+  <circle cx="720" cy="467" r="45" fill="#111d20" opacity="0.7"/>
+  <path d="M658 410c30-27 77-34 115-21" stroke="#d2e3dc" stroke-width="12" fill="none" stroke-linecap="round" opacity="0.7"/>
+  <rect x="506" y="309" width="75" height="20" rx="7" fill="#ff4f00"/>
+  <circle cx="899" cy="321" r="16" fill="#ed6a38"/>
+  <path d="M473 590h494" stroke="#6f6c5e" stroke-width="9" opacity="0.5"/>
+  <g fill="#8c4a2c" font-family="Georgia, serif">
+    <text x="110" y="162" font-size="38">STUDIO / 01</text>
+    <text x="110" y="540" font-size="74" letter-spacing="-3">Object &amp; light.</text>
+  </g>
+</svg>

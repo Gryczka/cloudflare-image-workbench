@@ -1,0 +1,895 @@
+---
+import '../styles/site.css';
+import { DEMO_SOURCES, SHOWCASES } from '../showcases/catalog';
+import { CREATIVE_STYLE_LABELS, IMAGE_MODEL_LABEL } from '../lib/ai';
+import { GARDEN_URL, REMOVAL_REQUEST_URL, REPOSITORY_URL, docsLink } from '../lib/site';
+
+export const prerender = true;
+
+const title = 'Image Workbench — One image. Every angle.';
+const description =
+  'A hands-on image transformation and editorial workflow showcase. Inspect real Cloudflare Images binding recipes, source code, results, and execution details.';
+// Absolute URLs need a build-time origin (SITE_URL); without one they are omitted, not guessed.
+const canonical = Astro.site ? new URL('/', Astro.site).href : null;
+const ogImage = Astro.site ? new URL('/og-image.png', Astro.site).href : null;
+const ogImageAlt =
+  'Image Workbench: One image. Every angle. An illustrated street scene framed by 16:9, 1:1, and 4:5 crops around a focal point.';
+const categories = [...new Set(SHOWCASES.map((sample) => sample.category))];
+const focalPoints = [0.25, 0.5, 0.75].flatMap((y) =>
+  [0.25, 0.5, 0.75].map((x) => `${x.toFixed(2)}-${y.toFixed(2)}`),
+);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f4ead8" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Image Workbench" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    {ogImage && (
+      <>
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={ogImageAlt} />
+        <meta name="twitter:image" content={ogImage} />
+        <meta name="twitter:image:alt" content={ogImageAlt} />
+      </>
+    )}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">
+      Skip to content
+    </a>
+    <div class="page-shell">
+      <header class="site-header" aria-label="Site header">
+        <a class="brand" href="/" aria-label="Image Workbench home">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+          <span>
+            image<span class="brand-accent">/</span>workbench
+          </span>
+        </a>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a href="#capabilities">Explore samples</a>
+          <a href="#workbench">Private workflow</a>
+          <a href="#examples">The gallery</a>
+        </nav>
+        <a class="header-link" href="#capabilities">
+          Inspect the code <span aria-hidden="true">↘</span>
+        </a>
+      </header>
+
+      <main id="main">
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="hero-copy">
+            <p class="eyebrow">
+              <span class="eyebrow-dot"></span> A CLOUD-NATIVE IMAGE LAB{' '}
+              <span class="eyebrow-index">/ 001</span>
+            </p>
+            <h1 id="hero-title">
+              One image.
+              <br />
+              <em>Every angle.</em>
+            </h1>
+            <p class="hero-summary">
+              Resize, frame, encode, and compose with real image transformations. Inspect the Worker
+              recipe behind each result, then see how private R2 originals become durable editorial
+              derivatives and optional AI-assisted treatments.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#capabilities">
+                Explore the samples <span aria-hidden="true">↗</span>
+              </a>
+              <a class="text-link" href="#workbench">
+                See the private workflow <span aria-hidden="true">↓</span>
+              </a>
+            </div>
+            <p class="hero-footnote">
+              <span aria-hidden="true">✳</span> Real encoded pixels. Auditable recipes. Synthetic
+              stays synthetic.
+            </p>
+          </div>
+
+          <div class="hero-art" aria-label="Illustration of an editorial image workspace">
+            <figure class="hero-frame">
+              <div class="hero-frame-heading">
+                <span>THE SOURCE / 01</span>
+                <span class="record-light">● &nbsp; YOUR IMAGE, YOUR STORY</span>
+              </div>
+              <div class="hero-image-wrap">
+                <img
+                  id="hero-image"
+                  src="/scene.svg"
+                  width="1200"
+                  height="800"
+                  alt="Original illustration of a city scene at golden hour"
+                />
+                <div class="hero-reticle" aria-hidden="true">
+                  <span></span>
+                </div>
+                <span class="image-corner corner-tl" aria-hidden="true"></span>
+                <span class="image-corner corner-tr" aria-hidden="true"></span>
+                <span class="image-corner corner-bl" aria-hidden="true"></span>
+                <span class="image-corner corner-br" aria-hidden="true"></span>
+              </div>
+              <figcaption id="hero-caption">
+                Illustrative layout sketch · published examples appear below
+              </figcaption>
+            </figure>
+            <div class="hero-stamp" aria-hidden="true">
+              A STORY
+              <br />
+              IN EVERY
+              <br />
+              FRAME <span>↗</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="ticker" aria-label="Featured platform capabilities">
+          <span>BUILT FOR THE EDITORIAL MOMENT</span>
+          <span class="ticker-star" aria-hidden="true">
+            ✳
+          </span>
+          <span>RESIZE</span>
+          <span class="ticker-star" aria-hidden="true">
+            ✳
+          </span>
+          <span>FRAME</span>
+          <span class="ticker-star" aria-hidden="true">
+            ✳
+          </span>
+          <span>ENCODE</span>
+          <span class="ticker-star" aria-hidden="true">
+            ✳
+          </span>
+          <span>COMPOSE / AUTOMATE</span>
+        </div>
+
+        <section
+          id="capabilities"
+          class="section capability-section"
+          aria-labelledby="capabilities-title"
+        >
+          <div class="section-header">
+            <div>
+              <p class="section-index">01 / THE CAPABILITY SHELF</p>
+              <h2 id="capabilities-title">
+                Change the recipe.
+                <br />
+                <em>See what ran.</em>
+              </h2>
+            </div>
+            <p>
+              Nine bounded demonstrations of everyday image-management tasks. Each sample has its
+              own architecture, source excerpts, and run record.
+            </p>
+          </div>
+          <nav class="capability-nav" aria-label="Sample categories">
+            {categories.map((category, index) => (
+              <a href={`#capability-group-${index}`}>{category} ↘</a>
+            ))}
+          </nav>
+
+          {categories.map((category, index) => (
+            <div id={`capability-group-${index}`} class="capability-group">
+              <h3 class="capability-group-heading">
+                <span>0{index + 1} /</span> {category}
+              </h3>
+              <div class="capability-grid">
+                {SHOWCASES.filter((sample) => sample.category === category).map((sample) => (
+                  <article class="sample-card" id={`sample-${sample.id}`} data-showcase={sample.id}>
+                    <div class="sample-heading">
+                      <span class="micro-label">
+                        {sample.kind === 'request'
+                          ? 'HTTP WORKER / LIVE RECIPE'
+                          : 'WORKFLOW / DURABLE RESULT'}
+                      </span>
+                      <h4>{sample.title}</h4>
+                      <p>{sample.summary}</p>
+                    </div>
+                    {sample.kind === 'request' ? (
+                      <div class="sample-controls">
+                        <label>
+                          Demo source
+                          <select data-sample-source aria-label={`${sample.title} demo source`}>
+                            {DEMO_SOURCES.map((source) => (
+                              <option
+                                value={source.id}
+                                selected={source.id === sample.defaultSource}
+                              >
+                                {source.title}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label>
+                          Recipe
+                          <select data-sample-variant aria-label={`${sample.title} recipe`}>
+                            {sample.variants.map((variant) => (
+                              <option
+                                value={variant.id}
+                                selected={sample.id === 'framing' && variant.id === 'face'}
+                              >
+                                {variant.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        {sample.id === 'framing' && (
+                          <fieldset class="focal-selector" data-focal-selector hidden>
+                            <legend>Choose the focal point on the source (3 × 3)</legend>
+                            <div class="focal-buttons">
+                              {focalPoints.map((point) => (
+                                <button
+                                  type="button"
+                                  data-point={point}
+                                  aria-label={`Focal point ${point}`}
+                                  aria-pressed={point === '0.50-0.50'}
+                                  class={point === '0.50-0.50' ? 'is-active' : ''}
+                                >
+                                  +
+                                </button>
+                              ))}
+                            </div>
+                          </fieldset>
+                        )}
+                        {sample.id === 'responsive' && (
+                          <>
+                            <label>
+                              Request Accept scenario
+                              <select data-sample-accept>
+                                <option value="avif">AVIF + WebP + JPEG accepted</option>
+                                <option value="webp">AVIF excluded · WebP accepted</option>
+                                <option value="jpeg">Only JPEG accepted</option>
+                              </select>
+                            </label>
+                            <label>
+                              Save-Data request header
+                              <select data-sample-save>
+                                <option value="off">Omitted</option>
+                                <option value="on">On · quality 55</option>
+                              </select>
+                            </label>
+                          </>
+                        )}
+                        <button type="button" class="button button-dark sample-run" data-sample-run>
+                          Render this recipe <span aria-hidden="true">↗</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <p class="sample-workflow-note">
+                        This sample reads a completed, authorized private run or an approved gallery
+                        example. Switching crops retrieves materialized R2 objects; it does not
+                        start a new Workflow.
+                      </p>
+                    )}
+                    <p class="sample-state" data-sample-status role="status" aria-live="polite">
+                      {sample.kind === 'request'
+                        ? 'Select a source and render to inspect the response.'
+                        : 'Waiting for a completed Workflow example. The reference architecture and code are available below.'}
+                    </p>
+                    <div class="sample-inspector" data-sample-inspector></div>
+                    <div class="sample-docs">
+                      <a href={docsLink(sample.docsUrl)} target="_blank" rel="noopener noreferrer">
+                        Cloudflare documentation ↗
+                      </a>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          ))}
+        </section>
+
+        <section id="workbench" class="section workbench-section" aria-labelledby="workbench-title">
+          <div class="section-header">
+            <div>
+              <p class="section-index">02 / THE PRIVATE LAB</p>
+              <h2 id="workbench-title">
+                Bring your image.
+                <br />
+                <em>Find its focus.</em>
+              </h2>
+            </div>
+            <p>
+              Drop in a photograph, then compare how three different crop strategies treat the same
+              subject. Results stay private unless you opt into the gallery and an operator approves
+              them.
+            </p>
+          </div>
+
+          <div class="workspace">
+            <div class="workspace-sidebar">
+              <div class="workspace-toolbar">
+                <span class="tiny-dot"></span> SOURCE MATERIAL{' '}
+                <span class="toolbar-step">STEP 01 / 03</span>
+              </div>
+              <form id="upload-form" novalidate>
+                <label class="upload-target" for="image-input" id="drop-zone">
+                  <span class="upload-icon" aria-hidden="true">
+                    ↥
+                  </span>
+                  <strong id="file-title">Drop a photo here</strong>
+                  <span id="file-subtitle">or click to browse your files</span>
+                  <small>JPEG, PNG or WebP · up to 5 MB / 16 MP</small>
+                  <input
+                    id="image-input"
+                    name="image"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    required
+                  />
+                </label>
+                <p class="form-caption">
+                  Only upload images you own or have permission to process. AI analyzes a resized
+                  preview; private result access expires after 24 hours.{' '}
+                  <a href="#privacy">Privacy details</a>
+                </p>
+                <fieldset class="gallery-consent" id="gallery-permission" disabled>
+                  <legend>Optional gallery permission</legend>
+                  <label>
+                    <input
+                      id="gallery-consent"
+                      type="checkbox"
+                      name="gallery-consent"
+                      value="yes"
+                    />
+                    I have permission to publish this image and opt into operator review for the
+                    public gallery.
+                  </label>
+                  <label for="gallery-credit">
+                    Your preferred image credit (required only if opting in)
+                  </label>
+                  <input
+                    id="gallery-credit"
+                    name="gallery-credit"
+                    type="text"
+                    maxlength="120"
+                    autocomplete="off"
+                  />
+                </fieldset>
+                <div
+                  id="upload-challenge"
+                  class="challenge"
+                  role="group"
+                  aria-label="Upload verification"
+                ></div>
+                <button
+                  class="button button-primary button-wide"
+                  id="upload-button"
+                  type="submit"
+                  disabled
+                >
+                  Analyze this image <span aria-hidden="true">↗</span>
+                </button>
+                <p id="upload-status" class="form-status" role="status" aria-live="polite">
+                  Checking demo availability…
+                </p>
+              </form>
+              <div class="workspace-sidebar-foot">
+                <span>PRIVATE BY DEFAULT</span>
+                <span>↗</span>
+              </div>
+            </div>
+
+            <div class="workspace-main">
+              <div class="workspace-toolbar">
+                <span class="tiny-dot"></span> THE EDITORIAL DESK{' '}
+                <span class="toolbar-step">STEP 02 / 03</span>
+              </div>
+              <div class="workspace-empty" id="workspace-empty">
+                <div class="workspace-empty-graphic" aria-hidden="true">
+                  <div class="empty-outline empty-outline-one"></div>
+                  <div class="empty-outline empty-outline-two"></div>
+                  <span class="empty-crosshair">+</span>
+                </div>
+                <p class="empty-index">YOUR NEXT STORY STARTS HERE</p>
+                <h3>
+                  Something worth <em>looking at.</em>
+                </h3>
+                <p>
+                  Upload an image to see its focal point, editorial crops, and writing suggestions
+                  appear here.
+                </p>
+              </div>
+
+              <div id="result-panel" class="results" hidden>
+                <div class="results-intro">
+                  <span class="results-label">WORKBENCH / LIVE RESULT</span>
+                  <span id="result-state" class="status-pill">
+                    Processing
+                  </span>
+                </div>
+                <div class="progress-list" id="progress-list" role="status" aria-live="polite">
+                  <span id="progress-store">01 &nbsp; Image stored privately</span>
+                  <span id="progress-analyze">02 &nbsp; Finding the subject</span>
+                  <span id="progress-crop">03 &nbsp; Rendering the crops</span>
+                </div>
+                <div class="result-content" id="result-content" hidden>
+                  <div class="source-compare">
+                    <div class="source-photo">
+                      <img id="source-preview" alt="Private image preview" />
+                      <span
+                        id="focal-pin"
+                        class="focal-pin"
+                        hidden
+                        aria-label="AI-suggested focal point"
+                      ></span>
+                    </div>
+                    <div class="source-notes">
+                      <span class="micro-label">SUBJECT &amp; FOCAL POINT</span>
+                      <h3 id="subject-label">—</h3>
+                      <p id="focal-description">The focal point is a suggestion, not a fact.</p>
+                      <span class="model-tag" id="analysis-model">
+                        Model attribution pending
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="desk-divider">
+                    <span>THREE WAYS TO FRAME IT</span>
+                    <span>01 / 02 / 03</span>
+                  </div>
+                  <div
+                    class="preset-switch"
+                    role="group"
+                    aria-label="Select editorial aspect ratio"
+                  >
+                    <button
+                      type="button"
+                      class="preset-button is-active"
+                      data-preset="feature"
+                      aria-pressed="true"
+                    >
+                      Feature <span>16:9</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="preset-button"
+                      data-preset="portrait"
+                      aria-pressed="false"
+                    >
+                      Portrait <span>4:5</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="preset-button"
+                      data-preset="square"
+                      aria-pressed="false"
+                    >
+                      Social <span>1:1</span>
+                    </button>
+                  </div>
+                  <div class="crop-grid" id="crop-grid">
+                    <article class="crop-card">
+                      <div class="crop-image">
+                        <img id="crop-center" alt="Center crop" hidden />
+                        <span id="crop-center-fallback">Preparing crop…</span>
+                      </div>
+                      <div class="crop-caption">
+                        <div>
+                          <strong>Center</strong>
+                          <small>The classic crop</small>
+                          <button
+                            type="button"
+                            data-inspect="center"
+                            aria-pressed="true"
+                            class="text-link"
+                          >
+                            Inspect ↗
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          data-download="center"
+                          class="download-link"
+                          aria-label="Download center crop"
+                          disabled
+                        >
+                          ↓
+                        </button>
+                      </div>
+                    </article>
+                    <article class="crop-card">
+                      <div class="crop-image">
+                        <img id="crop-auto" alt="Automatic saliency crop" hidden />
+                        <span id="crop-auto-fallback">Preparing crop…</span>
+                      </div>
+                      <div class="crop-caption">
+                        <div>
+                          <strong>Automatic</strong>
+                          <small>Cloudflare Images saliency</small>
+                          <button
+                            type="button"
+                            data-inspect="auto"
+                            aria-pressed="false"
+                            class="text-link"
+                          >
+                            Inspect ↗
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          data-download="auto"
+                          class="download-link"
+                          aria-label="Download automatic crop"
+                          disabled
+                        >
+                          ↓
+                        </button>
+                      </div>
+                    </article>
+                    <article class="crop-card">
+                      <div class="crop-image">
+                        <img id="crop-ai" alt="AI-guided focal point crop" hidden />
+                        <span id="crop-ai-fallback">Preparing crop…</span>
+                      </div>
+                      <div class="crop-caption">
+                        <div>
+                          <strong>AI guided</strong>
+                          <small>Vision focal point + Images</small>
+                          <button
+                            type="button"
+                            data-inspect="ai"
+                            aria-pressed="false"
+                            class="text-link"
+                          >
+                            Inspect ↗
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          data-download="ai"
+                          class="download-link"
+                          aria-label="Download AI-guided crop"
+                          disabled
+                        >
+                          ↓
+                        </button>
+                      </div>
+                    </article>
+                  </div>
+                  <div id="private-inspector" class="sample-inspector private-inspector"></div>
+
+                  <div class="editorial-copy">
+                    <div class="desk-divider">
+                      <span>WORDS FOR THE PICTURE</span>
+                      <span>EDIT BEFORE USE ↗</span>
+                    </div>
+                    <div class="copy-fields">
+                      <label>
+                        Caption suggestion
+                        <textarea
+                          id="caption-edit"
+                          rows="3"
+                          placeholder="Caption suggestion unavailable — write your own."
+                        ></textarea>
+                        <button type="button" id="copy-caption" class="text-link">
+                          Copy caption ↗
+                        </button>
+                      </label>
+                      <label>
+                        Alt text suggestion
+                        <textarea
+                          id="alt-edit"
+                          rows="3"
+                          placeholder="Alt text suggestion unavailable — write your own."
+                        ></textarea>
+                        <button type="button" id="copy-alt" class="text-link">
+                          Copy alt text ↗
+                        </button>
+                      </label>
+                    </div>
+                    <p>
+                      AI suggestions can be incomplete or wrong. Confirm names, context and
+                      accessibility details before publication.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="creative-panel" class="creative-panel" hidden>
+            <div class="creative-copy">
+              <span class="section-index">OPTIONAL / THE CREATIVE LANE</span>
+              <h3>
+                A new visual language.
+                <br />
+                <em>Never a news photo.</em>
+              </h3>
+              <p>
+                Create one clearly synthetic, newspaper-style illustration of your own image.
+                Restrained color, readable composition, and a landscape frame. Creative outputs are
+                private and never mixed with editorial crops.
+              </p>
+            </div>
+            <form id="creative-form">
+              <label for="creative-style">Choose a visual treatment</label>
+              <select id="creative-style" name="style">
+                {Object.entries(CREATIVE_STYLE_LABELS).map(([style, label]) => (
+                  <option value={style} selected={style === 'illustration'}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <div
+                id="creative-challenge"
+                class="challenge"
+                aria-label="Creative verification"
+              ></div>
+              <button class="button button-dark" id="creative-button" type="submit">
+                Generate one variation <span aria-hidden="true">↗</span>
+              </button>
+              <p id="creative-status" class="form-status" role="status" aria-live="polite">
+                One variation per upload · clearly labeled as generated.
+              </p>
+            </form>
+            <div class="creative-preview">
+              <span class="synthetic-label">SYNTHETIC / NOT A DOCUMENTARY IMAGE</span>
+              <img id="creative-image" alt="AI-generated synthetic illustration" hidden />
+              <div id="creative-placeholder" class="creative-placeholder" aria-hidden="true">
+                ✳
+              </div>
+              <button type="button" id="creative-download" class="download-link" hidden>
+                Download variation ↓
+              </button>
+              <small id="creative-model">Model identity recorded after generation</small>
+            </div>
+          </div>
+          <div id="creative-inspector" class="sample-inspector creative-inspector" hidden></div>
+        </section>
+
+        <section id="examples" class="section gallery-section" aria-labelledby="gallery-title">
+          <div class="section-header gallery-header">
+            <div>
+              <p class="section-index">03 / THE CURATED GALLERY</p>
+              <h2 id="gallery-title">
+                Proof in the <em>picture.</em>
+              </h2>
+            </div>
+            <p>
+              An upload appears here only if its owner opted in and the operator approved it.
+              Visitor uploads never become public on their own.
+            </p>
+          </div>
+          <div id="gallery-grid" class="gallery-grid" aria-live="polite">
+            <div class="gallery-empty">
+              <img
+                src="/scene.svg"
+                alt="Illustration of an urban scene; this is not a processed gallery image"
+                loading="lazy"
+              />
+              <div>
+                <span>THE GALLERY IS A CURATED SPACE</span>
+                <h3>Good work takes a second look.</h3>
+                <p>Approved, attributed examples will appear here soon.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <dialog id="gallery-dialog" class="gallery-dialog" aria-labelledby="dialog-title">
+          <div class="dialog-heading">
+            <span class="section-index">AN APPROVED EXAMPLE / CROP STUDY</span>
+            <button id="dialog-close" type="button" aria-label="Close example">
+              ×
+            </button>
+          </div>
+          <h2 id="dialog-title">Editorial comparison</h2>
+          <p id="dialog-credit"></p>
+          <div
+            class="preset-switch"
+            id="dialog-presets"
+            role="group"
+            aria-label="Choose example aspect ratio"
+          ></div>
+          <div id="dialog-crops" class="dialog-crops"></div>
+          <p id="dialog-caption"></p>
+          <div id="dialog-creative" hidden>
+            <span class="synthetic-label">SYNTHETIC / GENERATIVE EXAMPLE</span>
+            <img
+              id="dialog-creative-image"
+              alt="Synthetic image accompanying this approved example"
+            />
+            <p>This generated illustration is separate from the editorial crops.</p>
+            <p id="dialog-creative-model"></p>
+          </div>
+          <div id="gallery-inspector" class="sample-inspector"></div>
+          <div id="gallery-creative-inspector" class="sample-inspector" hidden></div>
+        </dialog>
+
+        <section
+          id="how-it-works"
+          class="section architecture-section"
+          aria-labelledby="architecture-title"
+        >
+          <div class="section-header">
+            <div>
+              <p class="section-index">04 / BEHIND THE FRAME</p>
+              <h2 id="architecture-title">
+                A little intelligence.
+                <br />
+                <em>A lot of intention.</em>
+              </h2>
+            </div>
+            <p>
+              Built for clarity: editorial transformations and generative experiments are separate
+              paths with different promises.
+            </p>
+          </div>
+          <div
+            class="flow"
+            aria-label="Editorial pipeline: private R2 upload, Queue, Workflow, AI analysis, and Images crops"
+          >
+            <div class="flow-step">
+              <span class="flow-number">01 / RECEIVE</span>
+              <span class="flow-symbol" aria-hidden="true">
+                ↥
+              </span>
+              <h3>Private R2</h3>
+              <p>The original stays in a private bucket and is deleted after processing.</p>
+            </div>
+            <div class="flow-step">
+              <span class="flow-number">02 / SIGNAL</span>
+              <span class="flow-symbol" aria-hidden="true">
+                ↝
+              </span>
+              <h3>Queue</h3>
+              <p>An object-create event starts a retryable processing job.</p>
+            </div>
+            <div class="flow-step">
+              <span class="flow-number">03 / UNDERSTAND</span>
+              <span class="flow-symbol" aria-hidden="true">
+                ◎
+              </span>
+              <h3>Workers AI</h3>
+              <p>Vision models draft language and suggest a focal point.</p>
+            </div>
+            <div class="flow-step">
+              <span class="flow-number">04 / FRAME</span>
+              <span class="flow-symbol" aria-hidden="true">
+                ▣
+              </span>
+              <h3>Images</h3>
+              <p>Real crops are materialized in a Workflow, not faked in CSS.</p>
+            </div>
+          </div>
+          <div class="architecture-footer">
+            <div>
+              <span class="micro-label">AN OPTIONAL, SEPARATE LANE</span>
+              <strong>{IMAGE_MODEL_LABEL}</strong>
+              <span>Creates a labeled synthetic illustration. It never replaces a real crop.</span>
+            </div>
+            <div>
+              <span class="micro-label">THE QUIET COORDINATOR</span>
+              <strong>D1 + Workflows</strong>
+              <span>Enforce global limits, track job progress, and keep approvals deliberate.</span>
+            </div>
+          </div>
+        </section>
+
+        <section id="privacy" class="section privacy-section" aria-labelledby="privacy-title">
+          <div class="section-header">
+            <div>
+              <p class="section-index">05 / PRIVACY</p>
+              <h2 id="privacy-title">
+                Private by default.
+                <br />
+                <em>Public by permission.</em>
+              </h2>
+            </div>
+            <p>What happens to an uploaded image, who can see it, and how long it is kept.</p>
+          </div>
+          <div class="privacy-grid">
+            <div>
+              <span class="micro-label">WHAT IS PROCESSED</span>
+              <strong>Your image, a preview, and its crops</strong>
+              <span>
+                The original goes to a private R2 bucket. Cloudflare Images makes a resized WebP
+                preview and the crops. Workers AI vision models (Moondream 3.1, with a Llama 4 Scout
+                fallback) read a JPEG copy of the preview to draft a caption, alt text, and focal
+                point. An optional synthetic illustration sends a small reference made from the
+                preview to {IMAGE_MODEL_LABEL}.
+              </span>
+            </div>
+            <div>
+              <span class="micro-label">HOW LONG IT IS KEPT</span>
+              <strong>About a day</strong>
+              <span>
+                The original is deleted once processing succeeds, or at expiry otherwise. Your
+                private link, stored only in this browser tab, expires after 24 hours. An hourly
+                cleanup then deletes the remaining files and records; R2 lifecycle rules are a
+                backstop that can take up to another day. Workflow run records are kept for one day.
+              </span>
+            </div>
+            <div>
+              <span class="micro-label">WHO CAN SEE IT</span>
+              <strong>You, and the operator for moderation</strong>
+              <span>
+                Results are visible only through your private link. The operator can view private
+                previews to moderate abuse and to review gallery submissions.
+              </span>
+            </div>
+            <div>
+              <span class="micro-label">WHAT BECOMES PUBLIC</span>
+              <strong>Only what you opt into</strong>
+              <span>
+                An image joins the gallery only if you give permission and a credit, and the
+                operator approves it. To withdraw a published example,{' '}
+                <a href={REMOVAL_REQUEST_URL} target="_blank" rel="noopener noreferrer">
+                  open an issue
+                </a>{' '}
+                naming its title, without attaching the image. It is unpublished and cached copies
+                are purged.
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <aside class="closing-banner">
+          <p>Made for the images that carry a story.</p>
+          <a href="#workbench">
+            Bring your own <span aria-hidden="true">↗</span>
+          </a>
+        </aside>
+      </main>
+
+      <footer class="footer">
+        <div class="footer-brand">
+          image<span>/</span>workbench <small>An open-source Cloudflare reference app.</small>
+        </div>
+        <div class="footer-links">
+          <a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">
+            Source on GitHub ↗
+          </a>
+          <a href="#capabilities">Executed source ↗</a>
+          <a href="#privacy">Privacy</a>
+          <a
+            href={docsLink('https://developers.cloudflare.com/images/optimization/binding/')}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Images docs ↗
+          </a>
+          <a
+            href={docsLink('https://developers.cloudflare.com/workflows/')}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Workflows docs ↗
+          </a>
+          {GARDEN_URL && (
+            <a href={GARDEN_URL} target="_blank" rel="noopener noreferrer">
+              Unrefined App Garden ↗
+            </a>
+          )}
+        </div>
+        <p>
+          Public sample recipes use attributed photographs. Visitor uploads are private by default,
+          and access to results expires after 24 hours. Creative images are labeled as synthetic. ©
+          2026 Patrick Gryczka.
+        </p>
+      </footer>
+    </div>
+    <script src="../scripts/workbench.ts"></script>
+  </body>
+</html>

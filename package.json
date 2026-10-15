@@ -1,0 +1,70 @@
+{
+  "name": "cloudflare-image-workbench",
+  "version": "0.1.0",
+  "description": "An open-source editorial image lab built on Cloudflare Workers.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^22.22.3 || ^24.16.0 || >=26.3.0"
+  },
+  "scripts": {
+    "build": "npm run check:sources && astro build",
+    "cf-typegen": "wrangler types",
+    "check": "npm run lint && npm test && npm run typecheck && npm run build",
+    "check:sources": "node scripts/verify-showcase-sources.mjs",
+    "db:migrate": "wrangler d1 migrations apply DB --remote",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "deploy": "npm run db:migrate && wrangler deploy",
+    "deploy:production": "node scripts/deploy-environment.mjs production",
+    "deploy:staging": "node scripts/deploy-environment.mjs staging",
+    "dev": "npm run cf-typegen && astro dev",
+    "format": "prettier --write .",
+    "lint": "eslint . && prettier --check .",
+    "lint:fix": "eslint . --fix && prettier --write .",
+    "preview": "npm run build && wrangler dev",
+    "start": "npm run dev",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "astro check && tsc -p src/scripts/tsconfig.json --noEmit"
+  },
+  "cloudflare": {
+    "bindings": {
+      "PUBLIC_UPLOADS_ENABLED": {
+        "description": "Leave `false` to deploy the public recipes only. Set `true` only after Turnstile, both secrets, and the R2 lifecycle rules are configured; see the README's **Enable visitor uploads** checklist."
+      },
+      "TURNSTILE_SITE_KEY": {
+        "description": "Site key of a [Turnstile widget](https://developers.cloudflare.com/turnstile/get-started/) for your Worker's hostname. Required, with `TURNSTILE_SECRET`, before uploads can be enabled."
+      },
+      "TURNSTILE_SECRET": {
+        "description": "Secret key of the same Turnstile widget. Leave blank while uploads are paused; never use Turnstile's always-pass test secret in a deployment."
+      },
+      "ADMIN_REVIEW_TOKEN": {
+        "description": "Operator token for the review and takedown API. Generate it with `openssl rand -hex 32`; base64 values are rejected. Leave blank to disable the operator API."
+      },
+      "MEDIA_BUCKET_NAME": {
+        "description": "Must equal the name of the `MEDIA` R2 bucket. The Queue consumer ignores upload events from any other bucket."
+      },
+      "START_WORKFLOW_ON_UPLOAD": {
+        "description": "`true` starts processing directly from the upload route, so uploads work before an R2 event notification exists. Set `false` once the notification feeds the Queue."
+      }
+    }
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@cloudflare/vitest-plugin": "^1.0.0",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.2",
+    "eslint": "^10.11.0",
+    "eslint-plugin-astro": "^3.2.1",
+    "prettier": "^3.9.9",
+    "prettier-plugin-astro": "^1.0.1",
+    "typescript": "^5.5.2",
+    "typescript-eslint": "^8.70.1",
+    "vitest": "~4.1.0",
+    "wrangler": "^4.138.0"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^14.3.3",
+    "astro": "^7.3.5"
+  }
+}

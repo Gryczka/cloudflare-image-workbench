@@ -1,0 +1,152 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // The top level is the default for local development and Deploy to Cloudflare:
+  // public recipes work immediately, while visitor uploads stay paused.
+  "name": "image-workbench",
+  "main": "./src/worker.ts",
+  "compatibility_date": "2026-09-21",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "triggers": { "crons": ["0 * * * *"] },
+  "assets": { "directory": "./dist", "binding": "ASSETS" },
+  "cache": { "enabled": true },
+  "observability": { "enabled": true },
+  "upload_source_maps": true,
+  "ai": { "binding": "AI" },
+  "images": { "binding": "IMAGES" },
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "image-workbench-media" }],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "image-workbench-db",
+      "migrations_dir": "migrations",
+    },
+  ],
+  // R2 event notifications are the only producer; the Worker never sends to UPLOAD_EVENTS.
+  // Wrangler creates a missing queue only when a producer declares it, so the binding lets a
+  // first deploy (including Deploy to Cloudflare) provision the queue. Keep both names equal.
+  "queues": {
+    "producers": [{ "binding": "UPLOAD_EVENTS", "queue": "image-workbench-events" }],
+    "consumers": [{ "queue": "image-workbench-events", "max_batch_size": 1 }],
+  },
+  "workflows": [
+    {
+      "name": "image-workbench-process",
+      "binding": "PROCESS_IMAGE",
+      "class_name": "ProcessImageWorkflow",
+    },
+  ],
+  "ratelimits": [
+    { "name": "UPLOAD_THROTTLE", "namespace_id": "249001", "simple": { "limit": 6, "period": 60 } },
+    {
+      "name": "SHOWCASE_THROTTLE",
+      "namespace_id": "249004",
+      "simple": { "limit": 60, "period": 60 },
+    },
+  ],
+  "vars": {
+    "PUBLIC_UPLOADS_ENABLED": "false",
+    "TURNSTILE_SITE_KEY": "",
+    "MEDIA_BUCKET_NAME": "image-workbench-media",
+    // Local R2 has no event notifications, and a fresh deployment may not have one yet.
+    // Starting the Workflow from the upload handler is safe alongside the Queue: the
+    // Workflow ID is deterministic, so whichever trigger arrives second is a no-op.
+    "START_WORKFLOW_ON_UPLOAD": "true",
+  },
+  "env": {
+    "staging": {
+      "name": "cloudflare-image-workbench-staging",
+      "workers_dev": true,
+      "preview_urls": true,
+      "cache": { "enabled": true },
+      "triggers": { "crons": ["0 * * * *"] },
+      "ai": { "binding": "AI" },
+      "images": { "binding": "IMAGES" },
+      "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "image-workbench-staging-media" }],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "image-workbench-staging-db",
+          "migrations_dir": "migrations",
+        },
+      ],
+      "queues": {
+        "producers": [{ "binding": "UPLOAD_EVENTS", "queue": "image-workbench-staging-events" }],
+        "consumers": [{ "queue": "image-workbench-staging-events", "max_batch_size": 1 }],
+      },
+      "workflows": [
+        {
+          "name": "image-workbench-staging-process",
+          "binding": "PROCESS_IMAGE",
+          "class_name": "ProcessImageWorkflow",
+        },
+      ],
+      "ratelimits": [
+        {
+          "name": "UPLOAD_THROTTLE",
+          "namespace_id": "249002",
+          "simple": { "limit": 6, "period": 60 },
+        },
+        {
+          "name": "SHOWCASE_THROTTLE",
+          "namespace_id": "249005",
+          "simple": { "limit": 60, "period": 60 },
+        },
+      ],
+      "vars": {
+        "PUBLIC_UPLOADS_ENABLED": "false",
+        "TURNSTILE_SITE_KEY": "",
+        "MEDIA_BUCKET_NAME": "image-workbench-staging-media",
+        // Staging and production prove the R2 notification → Queue → Workflow path.
+        "START_WORKFLOW_ON_UPLOAD": "false",
+      },
+    },
+    "production": {
+      "name": "cloudflare-image-workbench",
+      "workers_dev": true,
+      "preview_urls": false,
+      "cache": { "enabled": true },
+      "triggers": { "crons": ["0 * * * *"] },
+      "ai": { "binding": "AI" },
+      "images": { "binding": "IMAGES" },
+      "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "image-workbench-production-media" }],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "image-workbench-production-db",
+          "migrations_dir": "migrations",
+        },
+      ],
+      "queues": {
+        "producers": [{ "binding": "UPLOAD_EVENTS", "queue": "image-workbench-production-events" }],
+        "consumers": [{ "queue": "image-workbench-production-events", "max_batch_size": 1 }],
+      },
+      "workflows": [
+        {
+          "name": "image-workbench-production-process",
+          "binding": "PROCESS_IMAGE",
+          "class_name": "ProcessImageWorkflow",
+        },
+      ],
+      "ratelimits": [
+        {
+          "name": "UPLOAD_THROTTLE",
+          "namespace_id": "249003",
+          "simple": { "limit": 6, "period": 60 },
+        },
+        {
+          "name": "SHOWCASE_THROTTLE",
+          "namespace_id": "249006",
+          "simple": { "limit": 60, "period": 60 },
+        },
+      ],
+      "vars": {
+        "PUBLIC_UPLOADS_ENABLED": "false",
+        "TURNSTILE_SITE_KEY": "",
+        "MEDIA_BUCKET_NAME": "image-workbench-production-media",
+        "START_WORKFLOW_ON_UPLOAD": "false",
+      },
+    },
+  },
+}

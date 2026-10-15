@@ -1,0 +1,7 @@
+# Worker secrets. For local development, copy this file to .dev.vars (never commit .dev.vars).
+# Deploy to Cloudflare prompts for each entry. Both can stay blank while uploads are paused.
+
+# Secret key of the Turnstile widget whose site key is TURNSTILE_SITE_KEY.
+TURNSTILE_SECRET=
+# Operator token for /api/admin/*. Generate it with: openssl rand -hex 32
+ADMIN_REVIEW_TOKEN=

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Illustrated city at golden hour</title>
+  <desc id="desc">An original architectural illustration used to explain the crop-comparison interface.</desc>
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1">
+      <stop stop-color="#c9d8dc"/>
+      <stop offset=".56" stop-color="#e9d9c2"/>
+      <stop offset="1" stop-color="#f6d6a9"/>
+    </linearGradient>
+    <linearGradient id="wall" x2="1" y2="1">
+      <stop stop-color="#dcc6a4"/>
+      <stop offset="1" stop-color="#ad8b66"/>
+    </linearGradient>
+    <pattern id="brick" width="62" height="26" patternUnits="userSpaceOnUse">
+      <path d="M0 25.5h62M31 0v13M0 13h62" fill="none" stroke="#765b43" stroke-opacity=".15"/>
+    </pattern>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h1200v800H0z"/>
+  <circle cx="847" cy="159" r="86" fill="#fbf2d9" opacity=".8"/>
+  <path d="M0 338 100 283l104 58 142-96 100 98 85-43 180 48 160-66 118 90 111-61v238H0Z" fill="#768c89" opacity=".53"/>
+  <path d="M0 385 129 335l132 67 165-50 160 78 166-52 126 73 173-95 149 58v147H0Z" fill="#4e6665" opacity=".76"/>
+  <path fill="#bfc9b8" d="M0 480h1200v320H0z"/>
+  <path d="M0 568c237-81 481-73 734-36 212 32 329 35 466-14v282H0Z" fill="#e9d3a9"/>
+  <path d="M0 612c314-39 498-17 706 33 223 54 345 37 494 9v146H0Z" fill="#a4977d"/>
+  <path d="M0 620c339-34 540 16 750 78 163 48 278 60 450 17v85H0Z" fill="#526868"/>
+  <path d="M0 370h370v319H0z" fill="url(#wall)"/>
+  <path d="M0 370h370v319H0z" fill="url(#brick)"/>
+  <path d="M0 357 401 345v23L0 389Z" fill="#443d32"/>
+  <path d="M56 423h79v126H56zM179 414h80v126h-80zM289 405h56v140h-56z" fill="#586a6c"/>
+  <path d="M66 432h60v101H66zM188 423h61v101h-61zM297 414h39v112h-39z" fill="#2c4146"/>
+  <path d="M56 423h79v126H56zM179 414h80v126h-80zM289 405h56v140h-56z" fill="none" stroke="#efe4cf" stroke-width="9"/>
+  <path d="M96 423v126M219 414v126M317 405v140" stroke="#efe4cf" stroke-width="6"/>
+  <path d="M381 456h322v161H381z" fill="#eee2cb"/>
+  <path d="M381 456h322v161H381z" fill="url(#brick)"/>
+  <path d="M362 445h361v24H362z" fill="#aa6344"/>
+  <path d="M422 490h225v112H422z" fill="#526f6f"/>
+  <path d="M433 500h203v93H433z" fill="#8cb3b0"/>
+  <path d="M532 500v93M433 540h203" fill="none" stroke="#d7dccf" stroke-width="7"/>
+  <path d="M882 530c-80-44-75-107-33-138-42-54-8-110 45-113 27-83 157-87 181-6 70-7 112 71 74 127 49 74-23 123-89 137Z" fill="#315451"/>
+  <path d="M887 465c28-54 83-50 103-12 30-50 99-32 95 8" fill="none" stroke="#75967f" stroke-width="14" stroke-linecap="round" opacity=".75"/>
+  <path d="M979 396c11 89 10 186-5 290" fill="none" stroke="#564f42" stroke-width="34" stroke-linecap="round"/>
+  <path d="M1050 664H692" stroke="#d2c0a2" stroke-width="12"/>
+  <path d="M692 627c32-25 77-22 111 2l-11 35h-88z" fill="#ed650e"/>
+  <circle cx="753" cy="589" r="28" fill="#d89670"/>
+  <path d="M727 586c1-48 61-43 55-5l-12-8c-10 16-28 16-43 13Z" fill="#393933"/>
+  <path d="M728 649 704 740h33l39-76M780 657l34 80h30l-22-96" fill="#333f42"/>
+  <path d="M701 736h44M808 739h45" stroke="#302d2a" stroke-width="11" stroke-linecap="round"/>
+  <path d="M632 661h86M803 646h71" stroke="#443e32" stroke-width="9" stroke-linecap="round"/>
+  <path d="M767 709c118-15 259 9 433 66" stroke="#e5d2ae" stroke-width="3" opacity=".6"/>
+  <path d="M0 714c200-30 365-34 509 5" stroke="#e5d2ae" stroke-width="4" opacity=".5"/>
+  <path d="M0 800h1200" stroke="#241f19" stroke-opacity=".14" stroke-width="7"/>
+</svg>

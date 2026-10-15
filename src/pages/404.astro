@@ -1,0 +1,49 @@
+---
+import '../styles/site.css';
+
+export const prerender = true;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f4ead8" />
+    <meta name="robots" content="noindex" />
+    <title>Out of frame — Image Workbench</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="site-header" aria-label="Site header">
+        <a class="brand" href="/" aria-label="Image Workbench home">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+          <span>
+            image<span class="brand-accent">/</span>workbench
+          </span>
+        </a>
+      </header>
+      <main id="main" class="section not-found">
+        <p class="section-index">404 / OUT OF FRAME</p>
+        <h1>
+          Nothing in
+          <br />
+          <em>this frame.</em>
+        </h1>
+        <p>
+          The address may be mistyped. Private results never have a public page, and they expire
+          after 24 hours.
+        </p>
+        <a class="button button-primary" href="/">
+          Back to the workbench <span aria-hidden="true">↗</span>
+        </a>
+      </main>
+    </div>
+  </body>
+</html>
