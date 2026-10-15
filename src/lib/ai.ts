@@ -107,6 +107,16 @@ export function parseEditorialAnswer(
   return { caption: shortText(value, 240), altText: null, subject: null };
 }
 
+/**
+ * Moondream's documented output fields. The binding currently nests them under `result`, so both
+ * shapes are accepted; anything else, such as an event stream, yields no fields.
+ */
+export function moondreamFields(value: unknown): Record<string, unknown> {
+  const outer = value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
+  const inner = outer.result;
+  return inner && typeof inner === 'object' ? (inner as Record<string, unknown>) : outer;
+}
+
 function fallbackFocal(value: unknown): Analysis['focal'] {
   if (typeof value !== 'string') return null;
   try {
@@ -136,9 +146,38 @@ function failureSummary(error: unknown): string {
   return error instanceof Error ? `${error.name}: ${error.message}`.slice(0, 200) : 'Unknown error';
 }
 
+/** Bounded text from one field of a settled Moondream call; null if it failed or was empty. */
+function settledText(
+  result: PromiseSettledResult<Record<string, unknown>>,
+  field: string,
+  max: number,
+): string | null {
+  return result.status === 'fulfilled' ? shortText(result.value[field], max) : null;
+}
+
+/** A noun-phrase answer without closing punctuation, for display and as a point target. */
+function nounPhrase(value: string | null): string | null {
+  return value?.replace(/[.!]+$/, '').trim() || null;
+}
+
+/** The first located point, and whether it used normalized coordinates. */
+function firstPoint(fields: Record<string, unknown>): {
+  point: Analysis['focal'];
+  outcome: 'ok' | 'empty' | 'unscaled';
+} {
+  const located: unknown = Array.isArray(fields.points) ? fields.points[0] : undefined;
+  const point = normalizedPoint(located);
+  return { point, outcome: point ? 'ok' : located ? 'unscaled' : 'empty' };
+}
+
 // showcase:start analysis
 /** The vision models get an in-memory JPEG of the sanitized preview, never the original upload. */
 const ANALYSIS_INPUT = { format: 'image/jpeg', quality: 85 } as const satisfies ImageOutputOptions;
+export const EDITORIAL_QUESTIONS = {
+  alt: 'Write concise alt text for this image in under 15 words. Reply with the alt text only.',
+  subject: 'What is the principal visible subject? Reply with a short noun phrase only.',
+  object: 'Name the single most prominent object in this image in one to three words.',
+};
 
 export async function analyzeImage(
   env: Pick<Env, 'AI' | 'MEDIA'> & { IMAGES: Pick<Env['IMAGES'], 'input'> },
@@ -149,45 +188,45 @@ export async function analyzeImage(
   const encoded = await env.IMAGES.input(preview.body).output(ANALYSIS_INPUT);
   const bytes = new Uint8Array(await encoded.response().arrayBuffer());
   const image = `data:image/jpeg;base64,${toBase64(bytes)}`;
+  // Without `stream: false`, the binding replies with an event stream and point requests fail.
+  const moondream = async (input: Ai_Cf_Moondream_Moondream3_1_9B_A2B_Input) =>
+    moondreamFields(
+      await env.AI.run(VISION_MODEL, { ...input, image, temperature: 0.1, stream: false }),
+    );
+  const ask = (question: string, max_tokens: number) =>
+    moondream({ task: 'query', question, reasoning: false, max_tokens });
 
-  let draft = { caption: null, altText: null, subject: null } as ReturnType<
-    typeof parseEditorialAnswer
-  >;
-  let focal: Analysis['focal'] = null;
-  let estimatedFocal: Analysis['focal'] = null;
-  let focalSource: Analysis['focalSource'] = 'none';
-  let writingModel: string | null = null;
-  let focalModel: string | null = null;
   const notes: string[] = [];
   // Outcomes and bounded error summaries are logged; captions and image data never are.
-  const outcomes: Record<'query' | 'fallback' | 'point', CallOutcome> = {
-    query: 'skipped',
+  const outcomes: Record<'caption' | 'fallback' | 'face' | 'point', CallOutcome> = {
+    caption: 'skipped',
     fallback: 'skipped',
+    face: 'skipped',
     point: 'skipped',
   };
   const errors: Partial<Record<keyof typeof outcomes, string>> = {};
 
-  try {
-    const answer = await env.AI.run(VISION_MODEL, {
-      task: 'query',
-      image,
-      question:
-        'Return only JSON with caption (factual single sentence), alt (short alt text), and subject (a short noun phrase identifying the principal visible subject). Avoid conjecture.',
-      reasoning: false,
-      temperature: 0.1,
-      max_tokens: 180,
-    });
-    draft = parseEditorialAnswer(answer.answer);
-    outcomes.query = draft.caption ? 'ok' : 'empty';
-    if (draft.caption) writingModel = VISION_MODEL;
-  } catch (error) {
-    // A second vision model can supply drafts if Moondream is temporarily unavailable.
-    outcomes.query = 'error';
-    errors.query = failureSummary(error);
-  }
+  // Moondream's caption skill writes the caption; short questions draft the rest in parallel.
+  const [caption, alt, subject, object, face] = await Promise.allSettled([
+    moondream({ task: 'caption', caption_length: 'short' }),
+    ask(EDITORIAL_QUESTIONS.alt, 60),
+    ask(EDITORIAL_QUESTIONS.subject, 24),
+    ask(EDITORIAL_QUESTIONS.object, 16),
+    moondream({ task: 'point', target: 'human face', max_objects: 1 }),
+  ]);
+  let draft: Pick<Analysis, 'caption' | 'altText' | 'subject'> = {
+    caption: settledText(caption, 'caption', 240),
+    altText: settledText(alt, 'answer', 220),
+    subject: nounPhrase(settledText(subject, 'answer', 72)),
+  };
+  let writingModel: string | null = draft.caption ? VISION_MODEL : null;
+  outcomes.caption = caption.status === 'rejected' ? 'error' : draft.caption ? 'ok' : 'empty';
+  if (caption.status === 'rejected') errors.caption = failureSummary(caption.reason);
 
+  let estimatedFocal: Analysis['focal'] = null;
   if (!draft.caption) {
     try {
+      // A second vision model can supply drafts if Moondream is temporarily unavailable.
       const answer = await env.AI.run(VISION_FALLBACK_MODEL, {
         messages: [
           {
@@ -211,7 +250,7 @@ export async function analyzeImage(
         writingModel = VISION_FALLBACK_MODEL;
         estimatedFocal = fallbackFocal(answer.response);
         notes.push(
-          `Moondream ${outcomes.query === 'error' ? 'returned an error' : 'returned no usable caption'}; using an editable Llama 4 draft.`,
+          `Moondream ${outcomes.caption === 'error' ? 'returned an error' : 'returned no usable caption'}; using an editable Llama 4 draft.`,
         );
       }
     } catch (error) {
@@ -222,20 +261,22 @@ export async function analyzeImage(
     if (!draft.caption) notes.push('AI writing suggestions were unavailable.');
   }
 
-  if (draft.subject) {
+  // A visible face leads an editorial crop; otherwise Moondream points at the most prominent object.
+  let focal: Analysis['focal'] = null;
+  if (face.status === 'fulfilled') {
+    const located = firstPoint(face.value);
+    outcomes.face = located.outcome;
+    focal = located.point;
+  } else {
+    outcomes.face = 'error';
+    errors.face = failureSummary(face.reason);
+  }
+  const target = nounPhrase(settledText(object, 'answer', 48)) ?? draft.subject;
+  if (!focal && target) {
     try {
-      const point = await env.AI.run(VISION_MODEL, {
-        task: 'point',
-        image,
-        target: draft.subject,
-        max_objects: 1,
-      });
-      const located = point.points?.[0];
-      focal = normalizedPoint(located);
-      // Points outside 0..1 are rejected rather than guessed into a coordinate space.
-      outcomes.point = focal ? 'ok' : located ? 'unscaled' : 'empty';
-      if (focal) focalSource = 'moondream-point';
-      if (focal) focalModel = VISION_MODEL;
+      const located = firstPoint(await moondream({ task: 'point', target, max_objects: 1 }));
+      outcomes.point = located.outcome;
+      focal = located.point;
     } catch (error) {
       // The center and saliency crops still provide useful editorial comparisons.
       outcomes.point = 'error';
@@ -244,10 +285,19 @@ export async function analyzeImage(
     if (outcomes.point === 'error') notes.push('Moondream point request failed.');
     if (outcomes.point === 'empty') notes.push('Moondream did not locate the suggested subject.');
     if (outcomes.point === 'unscaled') {
+      // Points outside 0..1 are rejected rather than guessed into a coordinate space.
       notes.push('Moondream returned non-normalized coordinates, which were not used.');
     }
   }
-  if (!focal && estimatedFocal && draft.subject) {
+  const centered = focal !== null && isImageCenter(focal);
+  if (centered) {
+    // A focal point at the image center would only duplicate the center crop.
+    focal = null;
+    notes.push('Moondream located the subject at the image center, so no AI-guided crop was made.');
+  }
+  let focalSource: Analysis['focalSource'] = focal ? 'moondream-point' : 'none';
+  let focalModel: string | null = focal ? VISION_MODEL : null;
+  if (!focal && estimatedFocal) {
     if (isImageCenter(estimatedFocal)) {
       notes.push('The Llama 4 estimate was the image center, so no AI-guided crop was made.');
     } else {
@@ -256,7 +306,7 @@ export async function analyzeImage(
       focalModel = VISION_FALLBACK_MODEL;
       notes.push('Using an estimated Llama 4 focal point; compare it with other crops.');
     }
-  } else if (!focal) {
+  } else if (!focal && !centered) {
     notes.push('AI focal point unavailable; compare the center and automatic crops.');
   }
 

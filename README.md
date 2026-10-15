@@ -63,7 +63,7 @@ The perceptual WebP sample requests a named quality level through [the `cf.image
 
 ### AI editorial assistance
 
-Moondream 3.1 proposes text and normalized focal coordinates from an in-memory JPEG of the sanitized preview. If it returns an error or no usable output, Llama 4 Scout can supply an **identified, editable fallback** draft and estimated focal point; the result is marked partial, and its note says which failure occurred. An estimate at the exact image center is discarded because it would duplicate the center crop. Center and automatic-gravity crops are still produced if vision inference is unavailable. Each analysis logs per-model outcomes and bounded error summaries, never captions or image data. Neither model's text should be published as an unchecked factual claim.
+Moondream 3.1 works from an in-memory JPEG of the sanitized preview: its caption skill drafts the caption, short questions draft alt text and a subject, and it points at a visible human face or, failing that, the most prominent object for a normalized focal point. Every Moondream call sets `stream: false`; without it, the binding currently replies with an event stream, and point requests fail. If Moondream returns an error or no usable caption, Llama 4 Scout can supply an **identified, editable fallback** draft and estimated focal point; the result is marked partial, and its note says which failure occurred. A focal point at the exact image center is discarded because it would duplicate the center crop. Center and automatic-gravity crops are still produced if vision inference is unavailable. Each analysis logs per-model outcomes and bounded error summaries, never captions or image data. Neither model's text should be published as an unchecked factual claim.
 
 ## Features
 
